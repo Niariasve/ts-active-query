@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx examples/basic.ts",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format esm,cjs --dts"
   },
   "keywords": [],
   "author": "",
