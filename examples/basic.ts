@@ -3,6 +3,6 @@ import type { Database } from "../src/core/types";
 
 const db = createDatabase<Database>();
 
-const query = db.selectFrom("reservation");
+const sql = db.selectFrom("users").toSQL();
 
-console.log(query.toSql());
+console.log(sql);

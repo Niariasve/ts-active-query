@@ -6,7 +6,7 @@ export class SelectQueryBuilder<
         private table: TTable
     ) {}
 
-    toSql() {
+    toSQL() {
         return `SELECT * FROM ${String(this.table)}`;
     }
 }
