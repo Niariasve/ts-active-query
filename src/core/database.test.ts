@@ -5,7 +5,7 @@ import { SelectQueryBuilder } from "../query-builder/select-builder";
 import type { Database } from "./types";
 
 describe("DatabaseClient", () => {
-    it('builds SQL for db.selectFrom("users").toSQL()', () => {
+    it('builds SQL for a select from table', () => {
         const db = createDatabase<Database>();
         const builder = db.selectFrom("users");
 
@@ -18,10 +18,26 @@ describe("DatabaseClient", () => {
         expect(sql).toBe("SELECT * FROM users");
     });
 
-    it('fails when not using type keyof TDatabase on db.selectFrom', () => {
+    it('fails when not using a valid table name', () => {
         const db = createDatabase<Database>();
 
         // @ts-expect-error
         const builder = db.selectFrom("orders");
     });
+
+    it('builds SQL for a select with specific columns', () => {
+        const db = createDatabase<Database>();
+        const builder = db.selectFrom("users").select(["id", "name"]);
+
+        const sql = builder.toSQL();
+
+        expect(sql).toBe("SELECT id, name FROM users");
+    });
+
+    it('fails when not using a valid column name', () => {
+        const db = createDatabase<Database>();
+
+        // @ts-expect-error
+        const builder = db.selectFrom("users").select(["id", "last_name"]);
+    })
 });
