@@ -17,4 +17,11 @@ describe("DatabaseClient", () => {
 
         expect(sql).toBe("SELECT * FROM users");
     });
+
+    it('fails when not using type keyof TDatabase on db.selectFrom', () => {
+        const db = createDatabase<Database>();
+
+        // @ts-expect-error
+        const builder = db.selectFrom("orders");
+    });
 });
