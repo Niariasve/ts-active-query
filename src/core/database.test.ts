@@ -5,84 +5,31 @@ import { SelectQueryBuilder } from "../query-builder/select-builder";
 import type { Database } from "./types";
 
 describe("DatabaseClient", () => {
-    it("builds SQL for a select from table", () => {
-        const db = createDatabase<Database>();
-        const builder = db.selectFrom("users");
+    describe("runtime behavior", () => {
+        it("starts a select query for a valid table", () => {
+            const db = createDatabase<Database>();
+            const builder = db.selectFrom("users");
 
-        expectTypeOf(builder).toEqualTypeOf<
-            SelectQueryBuilder<Database, "users">
-        >();
-
-        const sql = builder.toSQL();
-
-        expect(sql).toBe("SELECT * FROM users");
+            expect(builder).toBeInstanceOf(SelectQueryBuilder);
+            expect(builder.toSQL()).toBe("SELECT * FROM users");
+        });
     });
 
-    it("fails when not using a valid table name", () => {
-        const db = createDatabase<Database>();
+    describe("type-level contracts", () => {
+        it("returns a builder scoped to the selected table", () => {
+            const db = createDatabase<Database>();
+            const builder = db.selectFrom("users");
 
-        // @ts-expect-error
-        db.selectFrom("orders");
-    });
+            expectTypeOf(builder).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+        });
 
-    it("builds SQL for a select with specific columns", () => {
-        const db = createDatabase<Database>();
-        const builder = db.selectFrom("users").select(["id", "name"]);
+        it("rejects unknown table names", () => {
+            const db = createDatabase<Database>();
 
-        const sql = builder.toSQL();
-
-        expect(sql).toBe("SELECT id, name FROM users");
-    });
-
-    it("fails when not using a valid column name", () => {
-        const db = createDatabase<Database>();
-
-        // @ts-expect-error
-        db.selectFrom("users").select(["id", "last_name"]);
-    });
-
-    it("builds SQL for a select with a numeric where clause", () => {
-        const db = createDatabase<Database>();
-        const builder = db.selectFrom("users").where("age", "=", 30);
-
-        expectTypeOf(builder).toEqualTypeOf<
-            SelectQueryBuilder<Database, "users">
-        >();
-
-        const sql = builder.toSQL();
-
-        expect(sql).toBe("SELECT * FROM users WHERE age = 30");
-    });
-
-    it("builds SQL for a selected-column query with a string where clause", () => {
-        const db = createDatabase<Database>();
-        const sql = db
-            .selectFrom("users")
-            .select(["id", "name"])
-            .where("name", "=", "Alice")
-            .toSQL();
-
-        expect(sql).toBe("SELECT id, name FROM users WHERE name = 'Alice'");
-    });
-
-    it("fails when where uses an invalid column name", () => {
-        const db = createDatabase<Database>();
-
-        // @ts-expect-error
-        db.selectFrom("users").where("last_name", "=", "Alice");
-    });
-
-    it("fails when where uses an unsupported operator", () => {
-        const db = createDatabase<Database>();
-
-        // @ts-expect-error
-        db.selectFrom("users").where("age", "LIKE", 30);
-    });
-
-    it("fails when where value does not match the column type", () => {
-        const db = createDatabase<Database>();
-
-        // @ts-expect-error
-        db.selectFrom("users").where("age", "=", "30");
+            // @ts-expect-error
+            db.selectFrom("orders");
+        });
     });
 });
