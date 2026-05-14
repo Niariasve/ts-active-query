@@ -30,6 +30,16 @@ describe("SelectQueryBuilder", () => {
 
             expect(sql).toBe("SELECT id, name FROM users WHERE name = 'Alice'");
         });
+
+        it("renders escaped single quotes in string where clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db
+                .selectFrom("users")
+                .where("name", "=", "O'Brien")
+                .toSQL();
+
+            expect(sql).toBe("SELECT * FROM users WHERE name = 'O''Brien'");
+        });
     });
 
     describe("type-level contracts", () => {

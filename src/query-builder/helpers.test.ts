@@ -15,8 +15,8 @@ describe("renderValue", () => {
             expect(renderValue("")).toBe("''");
         });
 
-        it("preserves embedded single quotes with no escaping", () => {
-            expect(renderValue("O'Brien")).toBe("'O'Brien'");
+        it("escapes embedded single quotes by doubling them", () => {
+            expect(renderValue("O'Brien")).toBe("'O''Brien'");
         });
     });
 });
