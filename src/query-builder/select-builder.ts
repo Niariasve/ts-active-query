@@ -6,7 +6,7 @@ export class SelectQueryBuilder<
     TTable extends keyof TDatabase
 > {
     private selectedColumns?: Array<keyof TDatabase[TTable]>;
-    private condition?: Condition;
+    private conditions: Condition[] = [];
 
     constructor(
         private table: TTable
@@ -22,22 +22,36 @@ export class SelectQueryBuilder<
         operator: "=",
         value: Extract<RowOf<TDatabase, TTable>[TColumn], RenderableValue>,
     ): this {
-        this.condition = {
-            column,
-            operator,
-            value
-        }
+        const condition = { column, operator, value } as Condition;
+
+        this.conditions.push(condition);
+
         return this;
     }
 
+    private buildSelectClause(): string {
+        const columns = this.selectedColumns?.map((column) => String(column)).join(", ") ?? "*";
+        return `SELECT ${columns} FROM ${String(this.table)}`;
+    }
+
+    private buildWhereClause(): string {
+        if (this.conditions.length === 0) {
+            return "";
+        }
+
+        const conditions = this.conditions.map(
+            condition => `${condition.column} ${condition.operator} ${renderValue(condition.value)}`
+        ).join(" AND ");
+
+        return `WHERE ${conditions}`;
+    }
+
     toSQL() {
-        const columns =
-            this.selectedColumns?.map((column) => String(column)).join(", ") ?? "*";
+        const selectString = this.buildSelectClause();
+        const whereString = this.buildWhereClause();
 
-        const condition = this.condition
-            ? ` WHERE ${this.condition.column} ${this.condition.operator} ${renderValue(this.condition.value)}`
-            : "";
+        const fullQuery = [selectString, whereString].join(" ").trim();
 
-        return `SELECT ${columns} FROM ${String(this.table)}${condition}`;
+        return fullQuery;
     }
 }

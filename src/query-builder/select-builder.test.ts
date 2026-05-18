@@ -6,6 +6,13 @@ import type { Database } from "../core/types";
 
 describe("SelectQueryBuilder", () => {
     describe("runtime behavior", () => {
+        it("renders queries without where clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db.selectFrom("users").toSQL();
+
+            expect(sql).toBe("SELECT * FROM users");
+        });
+
         it("renders selected columns", () => {
             const db = createDatabase<Database>();
             const sql = db.selectFrom("users").select(["id", "name"]).toSQL();
@@ -18,6 +25,17 @@ describe("SelectQueryBuilder", () => {
             const sql = db.selectFrom("users").where("age", "=", 30).toSQL();
 
             expect(sql).toBe("SELECT * FROM users WHERE age = 30");
+        });
+
+        it("concatenates multiple where clauses with AND", () => {
+            const db = createDatabase<Database>();
+            const sql = db
+                .selectFrom("users")
+                .where("age", "=", 30)
+                .where("name", "=", "Alice")
+                .toSQL();
+
+            expect(sql).toBe("SELECT * FROM users WHERE age = 30 AND name = 'Alice'");
         });
 
         it("renders selected-column queries with string where clauses", () => {
@@ -46,6 +64,18 @@ describe("SelectQueryBuilder", () => {
         it("preserves the table-scoped builder type across where", () => {
             const db = createDatabase<Database>();
             const builder = db.selectFrom("users").where("age", "=", 30);
+
+            expectTypeOf(builder).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+        });
+
+        it("preserves the table-scoped builder type across chained where clauses", () => {
+            const db = createDatabase<Database>();
+            const builder = db
+                .selectFrom("users")
+                .where("age", "=", 30)
+                .where("name", "=", "Alice");
 
             expectTypeOf(builder).toEqualTypeOf<
                 SelectQueryBuilder<Database, "users">
