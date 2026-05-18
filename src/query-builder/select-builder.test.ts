@@ -27,6 +27,34 @@ describe("SelectQueryBuilder", () => {
             expect(sql).toBe("SELECT * FROM users WHERE age = 30");
         });
 
+        it("renders greater-than where clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db.selectFrom("users").where("age", ">", 30).toSQL();
+
+            expect(sql).toBe("SELECT * FROM users WHERE age > 30");
+        });
+
+        it("renders less-than where clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db.selectFrom("products").where("stock", "<", 10).toSQL();
+
+            expect(sql).toBe("SELECT * FROM products WHERE stock < 10");
+        });
+
+        it("renders greater-than-or-equal where clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db.selectFrom("products").where("price", ">=", 99).toSQL();
+
+            expect(sql).toBe("SELECT * FROM products WHERE price >= 99");
+        });
+
+        it("renders less-than-or-equal where clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db.selectFrom("users").where("age", "<=", 65).toSQL();
+
+            expect(sql).toBe("SELECT * FROM users WHERE age <= 65");
+        });
+
         it("concatenates multiple where clauses with AND", () => {
             const db = createDatabase<Database>();
             const sql = db
@@ -74,10 +102,30 @@ describe("SelectQueryBuilder", () => {
             const db = createDatabase<Database>();
             const builder = db
                 .selectFrom("users")
-                .where("age", "=", 30)
+                .where("age", ">=", 30)
                 .where("name", "=", "Alice");
 
             expectTypeOf(builder).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+        });
+
+        it("accepts the supported relational where operators", () => {
+            const db = createDatabase<Database>();
+
+            expectTypeOf(db.selectFrom("users").where("age", ">", 30)).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+
+            expectTypeOf(db.selectFrom("users").where("age", "<", 30)).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+
+            expectTypeOf(db.selectFrom("users").where("age", ">=", 30)).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+
+            expectTypeOf(db.selectFrom("users").where("age", "<=", 30)).toEqualTypeOf<
                 SelectQueryBuilder<Database, "users">
             >();
         });

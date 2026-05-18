@@ -15,8 +15,10 @@ export type RenderableColumn<TDatabase, TTable extends keyof TDatabase> = {
     RowOf<TDatabase, TTable>[K] extends RenderableValue ? K : never;
 }[StringKeyOf<RowOf<TDatabase, TTable>>];
 
+export type WhereOperator = "=" | ">" | "<" | ">=" | "<=";
+
 export type Condition = {
     column: string;
-    operator: "=";
+    operator: WhereOperator;
     value: RenderableValue;
 }

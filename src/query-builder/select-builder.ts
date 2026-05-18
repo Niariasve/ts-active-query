@@ -1,5 +1,5 @@
 import { renderValue } from "./helpers";
-import type { Condition, RenderableColumn, RenderableValue, RowOf } from "./types";
+import type { Condition, RenderableColumn, RenderableValue, RowOf, WhereOperator } from "./types";
 
 export class SelectQueryBuilder<
     TDatabase,
@@ -19,7 +19,7 @@ export class SelectQueryBuilder<
 
     where<TColumn extends RenderableColumn<TDatabase, TTable>>(
         column: TColumn,
-        operator: "=",
+        operator: WhereOperator,
         value: Extract<RowOf<TDatabase, TTable>[TColumn], RenderableValue>,
     ): this {
         const condition = { column, operator, value } as Condition;
