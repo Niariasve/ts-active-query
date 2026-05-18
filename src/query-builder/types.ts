@@ -17,8 +17,11 @@ export type RenderableColumn<TDatabase, TTable extends keyof TDatabase> = {
 
 export type WhereOperator = "=" | ">" | "<" | ">=" | "<=";
 
+export type BooleanConnector = "AND" | "OR"
+
 export type Condition = {
     column: string;
     operator: WhereOperator;
     value: RenderableValue;
+    connector?: BooleanConnector;
 }

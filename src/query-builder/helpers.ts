@@ -6,8 +6,8 @@ export function renderValue(value: RenderableValue) {
     } else if (typeof value === "number") {
         return String(value);
     } else {
-        const _exhasutiveCheck: never = value;
-        return _exhasutiveCheck;
+        const exhaustiveCheck: never = value;
+        return exhaustiveCheck;
     }
 }
 

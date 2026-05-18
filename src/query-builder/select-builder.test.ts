@@ -66,6 +66,55 @@ describe("SelectQueryBuilder", () => {
             expect(sql).toBe("SELECT * FROM users WHERE age = 30 AND name = 'Alice'");
         });
 
+        it("renders where followed by orWhere", () => {
+            const db = createDatabase<Database>();
+            const sql = db
+                .selectFrom("users")
+                .where("age", ">=", 18)
+                .orWhere("name", "=", "Alice")
+                .toSQL();
+
+            expect(sql).toBe("SELECT * FROM users WHERE age >= 18 OR name = 'Alice'");
+        });
+
+        it("renders chains with multiple orWhere clauses", () => {
+            const db = createDatabase<Database>();
+            const sql = db
+                .selectFrom("users")
+                .where("age", ">=", 18)
+                .orWhere("name", "=", "Alice")
+                .orWhere("email", "=", "alice@example.com")
+                .toSQL();
+
+            expect(sql).toBe(
+                "SELECT * FROM users WHERE age >= 18 OR name = 'Alice' OR email = 'alice@example.com'"
+            );
+        });
+
+        it("renders mixed where and orWhere clauses in call order", () => {
+            const db = createDatabase<Database>();
+            const sql = db
+                .selectFrom("users")
+                .where("age", ">=", 18)
+                .orWhere("name", "=", "Alice")
+                .where("email", "=", "alice@example.com")
+                .toSQL();
+
+            expect(sql).toBe(
+                "SELECT * FROM users WHERE age >= 18 OR name = 'Alice' AND email = 'alice@example.com'"
+            );
+        });
+
+        it("falls back to where when orWhere is the first condition", () => {
+            const db = createDatabase<Database>();
+            const sql = db
+                .selectFrom("users")
+                .orWhere("age", ">=", 18)
+                .toSQL();
+
+            expect(sql).toBe("SELECT * FROM users WHERE age >= 18");
+        });
+
         it("renders selected-column queries with string where clauses", () => {
             const db = createDatabase<Database>();
             const sql = db
@@ -110,6 +159,18 @@ describe("SelectQueryBuilder", () => {
             >();
         });
 
+        it("preserves the table-scoped builder type across orWhere", () => {
+            const db = createDatabase<Database>();
+            const builder = db
+                .selectFrom("users")
+                .where("age", ">=", 18)
+                .orWhere("name", "=", "Alice");
+
+            expectTypeOf(builder).toEqualTypeOf<
+                SelectQueryBuilder<Database, "users">
+            >();
+        });
+
         it("accepts the supported relational where operators", () => {
             const db = createDatabase<Database>();
 
@@ -144,6 +205,13 @@ describe("SelectQueryBuilder", () => {
             db.selectFrom("users").where("last_name", "=", "Alice");
         });
 
+        it("rejects orWhere clauses for unknown columns", () => {
+            const db = createDatabase<Database>();
+
+            // @ts-expect-error
+            db.selectFrom("users").orWhere("last_name", "=", "Alice");
+        });
+
         it("rejects unsupported where operators", () => {
             const db = createDatabase<Database>();
 
@@ -151,11 +219,25 @@ describe("SelectQueryBuilder", () => {
             db.selectFrom("users").where("age", "LIKE", 30);
         });
 
+        it("rejects unsupported orWhere operators", () => {
+            const db = createDatabase<Database>();
+
+            // @ts-expect-error
+            db.selectFrom("users").orWhere("age", "LIKE", 30);
+        });
+
         it("rejects where values that do not match the column type", () => {
             const db = createDatabase<Database>();
 
             // @ts-expect-error
             db.selectFrom("users").where("age", "=", "30");
+        });
+
+        it("rejects orWhere values that do not match the column type", () => {
+            const db = createDatabase<Database>();
+
+            // @ts-expect-error
+            db.selectFrom("users").orWhere("age", "=", "30");
         });
     });
 });
